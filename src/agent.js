@@ -60,7 +60,7 @@ export default class Agent extends Mouse {
   /** Builds model of neural network. */
   buildModel() {
     this.model = tf.sequential({
-      layers: [tf.layers.dense({units: 40, inputShape: 8, activation: 'relu'}),
+      layers: [tf.layers.dense({units: 7, inputShape: 4, activation: 'relu'}), //kernelRegularizer: tf.regularizers.l2({l2: 0.001})}),
                tf.layers.dense({units: 4, activation: 'linear'})]
               });
     
@@ -70,9 +70,13 @@ export default class Agent extends Mouse {
   /** Returns input features tensor for the neural network. */
   getState() {
     let cheesePosition = this.game.objects.find(o => o instanceof Cheese).position;
-    let catPosition = this.game.objects.find(o => o instanceof Cat).position;
+   //let catPosition = this.game.objects.find(o => o instanceof Cat).position;
     
     let featureInputs = [
+      // Cheese position relative to mouse
+      //cheesePosition.x - this.position.x,
+      //cheesePosition.y - this.position.y
+
       // Cheese direction 
       this.position.x > cheesePosition.x, // is cheese on the left?
       this.position.x < cheesePosition.x, // is cheese on the right?
@@ -80,12 +84,12 @@ export default class Agent extends Mouse {
       this.position.y < cheesePosition.y, // is cheese at the bottom?
       
       // Is cat nearby (not far than 2 cells)?
-      this.position.x - catPosition.x <= 2 && 
-      this.position.y == catPosition.y, // is cat on the left?
+      //this.position.x - catPosition.x <= 2 && 
+      //this.position.y == catPosition.y, // is cat on the left?
       
-      catPosition.x - this.position.x <= 2 && this.position.y == catPosition.y, // is cat on the right?
-      this.position.y - catPosition.y <= 2 && this.position.x == catPosition.x, // is cat at the top?
-      this.position.y - catPosition.y >= -2 && this.position.x == catPosition.x, // is cat at the bottom?
+      //catPosition.x - this.position.x <= 2 && this.position.y == catPosition.y, // is cat on the right?
+      //this.position.y - catPosition.y <= 2 && this.position.x == catPosition.x, // is cat at the top?
+      //this.position.y - catPosition.y >= -2 && this.position.x == catPosition.x, // is cat at the bottom?
     ];
 
     return tf.tensor([featureInputs]);
@@ -122,7 +126,7 @@ export default class Agent extends Mouse {
     // Chosen reward value of +/-100 makes training faster and usually requires 1 or 2 training iterations,
     // while values of +/-1 may slow down training for long time or even get stuck.
     if (this.oldScore < this.game.score) reward = 100;
-    else if (this.oldScore > this.game.score) reward = -100;
+    else if (this.oldScore > this.game.score) reward = -10;
     return reward;
   }
 
@@ -146,9 +150,9 @@ export default class Agent extends Mouse {
     this.oldState = null;
     this.oldAction = null;
     this.oldScore = this.game.score;
-    this.trainingSessionMoves = 0;
-    this.trainingSessionWins = 0;
-    this.trainingSessionGames = 0;
+    //this.trainingSessionMoves = 0;
+    //this.trainingSessionWins = 0;
+    //this.trainingSessionGames = 0;
     this.isTraining = true;
   }
 
@@ -232,7 +236,7 @@ export default class Agent extends Mouse {
         q = reward;
       }
       
-      // Update current Q value for the action with calculated target Q value
+      // Replace current Q value for the action with calculated target Q value
       actions = this.model.predict(state).arraySync()[0];
       actions[action] = q;
 
@@ -249,7 +253,10 @@ export default class Agent extends Mouse {
         batchSize: this.memory.length,
         shuffle: true,
         callbacks: {
-          onTrainEnd: console.log('training complete')
+          onTrainEnd: function(logs) {
+            console.log('training complete');
+            //this.model.stopTraining = true;
+          }.bind(this)
         }
       });
   }

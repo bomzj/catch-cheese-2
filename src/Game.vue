@@ -60,7 +60,7 @@ export default {
       requestAnimationFrame(this.update);
       
       let dt = elapsedTime - this.lastElapsedTime;
-      console.log(dt);
+      //console.log(dt);
       // Throttle game speed to perceive game play
       if (dt < this.pace) return;
       this.lastElapsedTime = elapsedTime;
@@ -78,14 +78,14 @@ export default {
       let cheese = this.objects.find(o => o instanceof Cheese);
       
       // Check if cat hits the mouse
-      if (mouse.position.x == cat.position.x && 
-          mouse.position.y == cat.position.y) { 
-            this.score--;
-            this.round++;
-            // Generate new positon for mouse
-            let usedPositions = this.objects.filter(o => !(o instanceof Mouse)).map(o => o.position);
-            mouse.position = this.generateFreePosition(usedPositions);
-      }
+      // if (mouse.position.x == cat.position.x && 
+      //     mouse.position.y == cat.position.y) { 
+      //       this.score--;
+      //       this.round++;
+      //       // Generate new positon for mouse
+      //       let usedPositions = this.objects.filter(o => !(o instanceof Mouse)).map(o => o.position);
+      //       mouse.position = this.generateFreePosition(usedPositions);
+      // }
 
       // Check if mouse hits the cheese
       if (mouse.position.x == cheese.position.x && 
@@ -115,7 +115,7 @@ export default {
     generateField() {
       this.objects = [];
       
-      while (this.objects.length < 3) {
+      while (this.objects.length < 2) {
         let positions = this.objects.map(o => o.position);
         let position = this.generateFreePosition(positions);
         let gameObject;
@@ -123,8 +123,8 @@ export default {
         // Uncomment line below to play yourself and comment out line of '... = Agent'
         // if (positions.length == 0) gameObject = Player;
         if (positions.length == 0) gameObject = Agent;
-        if (positions.length == 1) gameObject = Cat;
-        if (positions.length == 2) gameObject = Cheese;
+        //if (positions.length == 1) gameObject = Cat;
+        if (positions.length == 1) gameObject = Cheese;
         
         gameObject = new gameObject();
         gameObject.position = position;
