@@ -1,8 +1,8 @@
 # Catch the Cheese
-Simple 1D turn based game, where AI agent is built upon Artificial Neural Network learns how to play the game on its own by using **Q-Learning** algorithm.  The goal of the game is to collect cheeses as much as possible avoiding cat.
+In this game mouse itself learns how to avoid cat and collect cheeses on the game field via **Q-Learning** algorithm by exploring all possible situations and getting either rewards or punishments.
 
 <p align="center">
-	<img src="catch-cheese.gif" alt="Catch Cheese Gameplay"  title="Catch Cheese Gameplay" width="600"/>
+	<img src="catch-cheese.gif" alt="Catch Cheese 2 Gameplay"  title="Catch Cheese Gameplay 2" width="600"/>
 </p>
 
 This game uses:

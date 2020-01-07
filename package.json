@@ -1,7 +1,7 @@
 {
   "name": "catch-cheese-2",
-  "description": "2D Vue.js game with AI 🐭 based on Reinforcement Learning",
   "version": "0.1.0",
+  "description": "Vue.js game with AI 🐭 based on Artificial Neural Network",
   "keywords": [
     "vue",
     "game",
