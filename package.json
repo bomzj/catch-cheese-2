@@ -1,7 +1,20 @@
 {
   "name": "catch-cheese-2",
+  "description": "2D Vue.js game with AI 🐭 based on Reinforcement Learning",
   "version": "0.1.0",
-  "private": true,
+  "keywords": [
+    "vue",
+    "game",
+    "tensorflow",
+    "AI",
+    "machine-learning",
+    "reinforcement-learning"
+  ],
+  "repository": "https://github.com/bomzj/catch-cheese-2",
+  "private": false,
+  "author": {
+    "name": "Maksim Shamihulau"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build"
