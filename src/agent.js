@@ -2,6 +2,7 @@ import * as tf from '@tensorflow/tfjs'
 import Mouse from './mouse'
 import Cheese from './cheese'
 import Cat from './cat'
+import Vue from 'vue'
 
 /** AI player based on neural network */
 export default class Agent extends Mouse {
@@ -14,22 +15,10 @@ export default class Agent extends Mouse {
   /** Probability to take random action instead of the best one. */
   exploration = 1;
 
-  explorationDecay = 0.9999;
+  explorationDecay = 0.9995;
 
   /** Discount factor of future reward. */
   discount = 0.95;
-
-  /** Previous score, is used to determine Score change in order to get reward for last action. */
-  oldScore = 0;
-
-  /** Index of action(0 or 1) taken in previous step(iteration).*/
-  oldAction = 0;
-
-  /** Previous state, is used in model training.*/
-  oldState;
-
-  /** How long takes Agent to respond in milliseconds.*/
-  responseTime = 300;
 
   /** Replay memory. */
   memory = [];
@@ -37,30 +26,38 @@ export default class Agent extends Mouse {
   /** Is agent in training mode or normal one?*/
   isTraining = false;
 
-  /** Is enabled after each model.fit() to check how model is well trained.*/
-  isModelValidating = false;
+  /** Stats to show how the agent performs */
+  stats = {
+    totalElapsedTime: 0,
+    totalMoves: 0,
+    totalWins: 0,
+    totalGames: 0,
+    totalWinsInRow: 0,
 
-  /** Is used during model validation to show how good model is trained.
-  If it equals to 10 then model is considered as well trained.*/
-  winsInRow = 0;
+    trainingElapsedTime: 0,
+    trainingMoves: 0,
+    trainingWins: 0,
+    trainingGames: 0,
+    trainingWinsInRow: 0,
+  };
 
-  trainingSessionMoves = 0;
-
-  trainingSessionWins = 0;
-
-  trainingSessionGames = 0;
-
-  trainingSessionTime = 0;
+  /** Contains lose or win game result [0, 1] for last 50 games.
+   * Is used to display immidiate win rate information for the last games.
+    */
+  latestGameResults = Array(100).fill(0);
+  latestGameIndex = 0;
 
   constructor() {
     super();
     this.buildModel();
   }
 
-  /** Builds model of neural network. */
+  /** Builds neural network model with one hidden layer consisted of 6 hidden neurons.
+    Optimal number of hidden neurons based on practical tests.
+   * */
   buildModel() {
     this.model = tf.sequential({
-      layers: [tf.layers.dense({units: 7, inputShape: 4, activation: 'relu'}), //kernelRegularizer: tf.regularizers.l2({l2: 0.001})}),
+      layers: [tf.layers.dense({units: 6, inputShape: 16, activation: 'relu'}),
                tf.layers.dense({units: 4, activation: 'linear'})]
               });
     
@@ -70,26 +67,59 @@ export default class Agent extends Mouse {
   /** Returns input features tensor for the neural network. */
   getState() {
     let cheesePosition = this.game.objects.find(o => o instanceof Cheese).position;
-   //let catPosition = this.game.objects.find(o => o instanceof Cat).position;
-    
-    let featureInputs = [
-      // Cheese position relative to mouse
-      //cheesePosition.x - this.position.x,
-      //cheesePosition.y - this.position.y
+    let catPosition = this.game.objects.find(o => o instanceof Cat).position;
 
-      // Cheese direction 
+    // All our input features are categorical(boolean) and one hot encoded
+    let featureInputs = [
+      /* Where is the cheese? */
       this.position.x > cheesePosition.x, // is cheese on the left?
       this.position.x < cheesePosition.x, // is cheese on the right?
       this.position.y > cheesePosition.y, // is cheese at the top?
       this.position.y < cheesePosition.y, // is cheese at the bottom?
       
-      // Is cat nearby (not far than 2 cells)?
-      //this.position.x - catPosition.x <= 2 && 
-      //this.position.y == catPosition.y, // is cat on the left?
+      /* Where is the cat? */
       
-      //catPosition.x - this.position.x <= 2 && this.position.y == catPosition.y, // is cat on the right?
-      //this.position.y - catPosition.y <= 2 && this.position.x == catPosition.x, // is cat at the top?
-      //this.position.y - catPosition.y >= -2 && this.position.x == catPosition.x, // is cat at the bottom?
+      // Is cat on the left?
+      (this.position.x > catPosition.x) && (this.position.x - catPosition.x <= 2) &&
+      (this.position.y == catPosition.y),
+
+      // Is cat on the right?
+      (this.position.x < catPosition.x) && (this.position.x - catPosition.x >= -2) &&
+      (this.position.y == catPosition.y),
+      
+      // Is cat at the top?
+      (this.position.y > catPosition.y) && (this.position.y - catPosition.y <= 2) &&
+      (this.position.x == catPosition.x),
+
+      // Is cat at the bottom?
+      (this.position.y < catPosition.y) && (this.position.y - catPosition.y >= -2) &&
+      (this.position.x == catPosition.x),
+
+      // Is cat at the top left?
+      (this.position.x - 1 == catPosition.x) && (this.position.y - 1 == catPosition.y),
+      
+      // Is cat at the top right?
+      (this.position.x + 1 == catPosition.x) && (this.position.y - 1 == catPosition.y),
+
+      // Is cat at the bottom left?
+      (this.position.x - 1 == catPosition.x) && (this.position.y + 1 == catPosition.y),
+      
+      // Is cat at the bottom right?
+      (this.position.x + 1 == catPosition.x) && (this.position.y + 1 == catPosition.y),
+
+      /* Did we reach the wall? */
+      
+      // Wall is on the left
+      this.position.x == 0,
+      
+      // Wall is on the right
+      this.position.x == this.game.fieldSize.width - 1,
+      
+      // Wall is at the top
+      this.position.y == 0,
+      
+      // Wall is at the bottom
+      this.position.y == this.game.fieldSize.height - 1,
     ];
 
     return tf.tensor([featureInputs]);
@@ -108,7 +138,7 @@ export default class Agent extends Mouse {
   /** Returns the best action or random one. 
    * @returns [0..3] - left, right, up, down
    */
-  getAction() {
+  getBestActionOrRandom() {
     if (this.exploration > Math.random()) {
       var action = Math.floor(Math.random() * 4);
     } else {
@@ -119,40 +149,101 @@ export default class Agent extends Mouse {
     return action;
   }
 
-  /** Evaluates reward for the last action based on score change. */
-  GetReward() {
-    var reward = -1;
-    // Player hit Cheese(+100) or Cat(-100). 
-    // Chosen reward value of +/-100 makes training faster and usually requires 1 or 2 training iterations,
-    // while values of +/-1 may slow down training for long time or even get stuck.
-    if (this.oldScore < this.game.score) reward = 100;
-    else if (this.oldScore > this.game.score) reward = -10;
-    return reward;
-  }
-
   update(dt) {
+    var state = this.getState();
+
     if (this.isTraining) {
-      var action = this.handleTraining(dt);
+      var action = this.getBestActionOrRandom();
+      this.memory.push({ state, action });
+
+      // Decrease exploration gradually during training
+      this.exploration *= this.explorationDecay;
     }
     else {
-      let state = this.getState();
       action = this.getBestAction(state);
     }
 
+    // Move the mouse
     if (action == 0) this.position.x--;
     if (action == 1) this.position.x++;
     if (action == 2) this.position.y--;
     if (action == 3) this.position.y++;
   }
 
+  /* Late Update is called when all objects did their actions(next state) 
+    and is meant for specific auxiliary stuff and should not alter game state. */
+  lateUpdate(dt) {
+    this.stats.totalMoves++;
+    this.stats.totalElapsedTime += dt;
+
+    if (this.isTraining) {
+      this.stats.trainingMoves++;
+      this.stats.trainingElapsedTime += dt;
+      
+      // Update last memory sample with default reward and next state
+      let sample = this.memory[this.memory.length - 1];
+      
+      // Set default punishing reward for the mouse wandering if no other reward was set
+      sample.reward = sample.reward || -1;
+      
+      sample.nextState = this.getState();
+    }
+
+    if (this.memory.length >= 100) {
+      this.fitModel();
+      this.memory = [];
+    }
+  }
+
+  onDie() {
+    this.stats.totalGames++;
+    this.stats.totalWinsInRow = 0;
+
+    if (this.isTraining) { 
+      this.stats.trainingGames++;
+      this.stats.trainingWinsInRow = 0;
+      
+      let sample = this.memory[this.memory.length - 1];
+      sample.reward = -200;
+    }
+    
+    this.setLatestGameResult(false);
+  }
+
+  onHitCheese() {
+    this.stats.totalGames++
+    this.stats.totalWins++;
+    this.stats.totalWinsInRow++;
+
+    if (this.isTraining) { 
+      this.stats.trainingGames++
+      this.stats.trainingWins++;
+      this.stats.trainingWinsInRow++;
+
+      let sample = this.memory[this.memory.length - 1];
+      sample.reward = 100;
+    }
+
+    this.setLatestGameResult(true);
+  }
+
+  onHitWall() {
+    if (this.isTraining) { 
+      let sample = this.memory[this.memory.length - 1];
+      sample.reward = -100;
+    }
+  }
+
+  /** Set latest game result safely */
+  setLatestGameResult(isWin) {
+    this.latestGameIndex = this.latestGameIndex < this.latestGameResults.length 
+      ? this.latestGameIndex
+      : 0;
+    
+    Vue.set(this.latestGameResults, this.latestGameIndex++, +isWin);
+  }
+
   enableTraining() {
-    this.memory = [];
-    this.oldState = null;
-    this.oldAction = null;
-    this.oldScore = this.game.score;
-    //this.trainingSessionMoves = 0;
-    //this.trainingSessionWins = 0;
-    //this.trainingSessionGames = 0;
     this.isTraining = true;
   }
 
@@ -160,69 +251,8 @@ export default class Agent extends Mouse {
     this.isTraining = false;
   }
 
-  /** Collects agent steps into replay memory and then trains on it. */
-  handleTraining(dt) {
-    let state = this.getState();
-    let action = this.getAction();
-
-    if (this.oldState) {
-      this.memory.push({ 
-        state: this.oldState, 
-        action: this.oldAction, 
-        reward: this.GetReward(),
-        nextState: this.oldScore == this.game.score ? state : null // nextState is null if it's terminal state
-      });
-    }
-    
-    if (this.memory.length >= 100) {
-      this.fitModel();
-      this.memory = [];
-      // Start validating training
-      //this.isModelValidating = true;
-    }
-
-    // Decrease exploration gradually during training
-    this.exploration *= this.explorationDecay;
-
-    // Collect training statistics
-    this.trainingSessionMoves++;
-    if (this.game.score > this.oldScore) this.trainingSessionWins++;
-    if (this.game.score != this.oldScore) this.trainingSessionGames++;
-    this.trainingSessionTime += dt;
-
-    // Save state/action/score for next iteration
-    this.oldState = state;
-    this.oldAction = action;
-    this.oldScore = this.game.score;
-    
-    // Validate recent training to determine whether agent plays good, otherwise retrain model one more time.
-    //this.validateTraining();
-    return action;
-  }
-
-  validateTraining() {
-    if (!this.isModelValidating) return;
-      
-    if (this.game.score > this.oldScore) {
-        this.winsInRow++;
-      }
-      else if (this.game.score < this.oldScore) {
-        // Continue training until agent wins 20 times in row
-        this.isModelValidating = false;
-        this.winsInRow = 0;
-      }
-
-      // Stop training once model wins 20 times in row
-      if (this.winsInRow == 20) {
-        this.isTraining = false;
-        this.isModelValidating = false;
-        this.memory = [];
-        this.winsInRow = 0;
-      }
-  }
-
   /** Trains model on samples from replay memory. */
-  fitModel() {
+  async fitModel() {
     let [inputs, outputs] = [[], []];
     for (let i = 0; i < this.memory.length; i++) {
       let { state, action, reward, nextState } = this.memory[i];
@@ -247,7 +277,7 @@ export default class Agent extends Mouse {
     inputs = tf.tensor(inputs);
     outputs = tf.tensor(outputs);
     // shuffle memory samples to disrupt state correlations for better training
-    return this.model.fit(inputs, outputs,
+    this.model.fit(inputs, outputs,
       {
         epochs: 100,
         batchSize: this.memory.length,
@@ -255,7 +285,8 @@ export default class Agent extends Mouse {
         callbacks: {
           onTrainEnd: function(logs) {
             console.log('training complete');
-            //this.model.stopTraining = true;
+            // fix issue with continuously running fit()
+            this.model.stopTraining = true; 
           }.bind(this)
         }
       });
