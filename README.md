@@ -2,7 +2,7 @@
 In this game mouse itself learns how to avoid cat and collect cheeses on the game field via **Q-Learning** algorithm by exploring all possible situations and getting either rewards or punishments.
 
 <p align="center">
-	<img src="catch-cheese.gif" alt="Catch Cheese 2 Gameplay"  title="Catch Cheese Gameplay 2" width="600"/>
+	<img src="catch-cheese.gif" alt="Catch Cheese 2 Gameplay"  title="Catch Cheese Gameplay 2" width="400"/>
 </p>
 
 This game uses:
