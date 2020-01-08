@@ -1,5 +1,5 @@
-# Catch the Cheese
-In this game mouse itself learns how to avoid cat and collect cheeses on the game field via **Q-Learning** algorithm by exploring all possible situations and getting either rewards or punishments. The mouse needs just 2 mins to understand the game at decent level to have ~98% win rate.
+# Catch the Cheese 2
+In this game mouse itself learns how to run away from the cat and collect cheeses on the game field via **Q-Learning** algorithm by exploring all possible situations and getting either rewards or punishments. The mouse needs just 2 mins to understand the game at decent level to have ~98% win rate.
 
 <p align="center">
 	<img src="catch-cheese.gif" alt="Catch Cheese 2 Gameplay"  title="Catch Cheese Gameplay 2" width="400"/>
