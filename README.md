@@ -19,7 +19,7 @@ Reward values:
 
 - Idling is -1. *We don't want the mouse to wander.*
 - Collecting a cheese is +100. 
-- The cat hits the mouse - 100. 
+- The cat hits the mouse -100. 
 - The mouse hits the walls -100. *We don't want to see the mouse 			trying to go out of the game field.*
 
 I tried different values for rewards and selected ones that work the best.
