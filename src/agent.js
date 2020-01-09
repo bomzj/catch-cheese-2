@@ -15,6 +15,7 @@ export default class Agent extends Mouse {
   /** Probability to take random action instead of the best one. */
   exploration = 1;
 
+  /** How fast exploration parameter decreases. */
   explorationDecay = 0.9995;
 
   /** Discount factor of future reward. */
@@ -41,7 +42,7 @@ export default class Agent extends Mouse {
     trainingWinsInRow: 0,
   };
 
-  /** Contains lose or win game result [0, 1] for last 50 games.
+  /** Contains lose or win game result [0, 1] for last 100 games.
    * Is used to display immidiate win rate information for the last games.
     */
   latestGameResults = Array(100).fill(0);
