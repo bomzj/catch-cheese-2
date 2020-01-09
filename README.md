@@ -1,8 +1,9 @@
 # Simple JavaScript Game with AI powered by Artificial Neural Networks
 
 This is a showcase of how AI agent (mouse) itself learns to run away from the cat and collect cheeses in the game.
+You can play the game at https://bomzj.github.io/catch-cheese-2/dist/.
 <p align="center">
-	<img src="https://github.com/bomzj/catch-cheese-2/raw/master/catch-cheese.gif" alt="Catch the Cheese 2"  title="Catch the Cheese 2" width="400"/>
+	<img src="https://github.com/bomzj/catch-cheese-2/raw/master/img/catch-cheese.gif" alt="Catch the Cheese 2"  title="Catch the Cheese 2" width="400"/>
 </p>
 
 ## How Mouse Learns to Play
@@ -12,7 +13,7 @@ The mouse uses **Q-Learning** which is the most popular algorithm in **Reinforce
 At the beginning, the mouse knows nothing about how to play properly the game and interacts with the environment randomly. The mouse receives rewards or punishments on each its action. This makes the mouse understand which actions were good and which weren't at particular game situations (states). Therefore, the mouse tries to maximize its rewards and avoid punishments during training.
 
 <p align="center">
-	<img src="https://storage.googleapis.com/artlab-public.appspot.com/share/42REW24GTFY4.png" alt="How agent interacts with environment in Reinforcement Learning"  title="How agent interacts with environment in Reinforcement Learning" width="600"/>
+	<img src="https://github.com/bomzj/catch-cheese-2/raw/master/img/reinforcement-learning.png" alt="How agent interacts with environment in Reinforcement Learning"  title="How agent interacts with environment in Reinforcement Learning" width="600"/>
 </p>
 
 Reward values:
@@ -20,7 +21,7 @@ Reward values:
 - Idling is -1. *We don't want the mouse to wander.*
 - Collecting a cheese is +100. 
 - The cat hits the mouse -100. 
-- The mouse hits the walls -100. *We don't want to see the mouse 			trying to go out of the game field.*
+- The mouse hits the walls -100. *We don't want to see the mouse trying to go out of the game field.*
 
 I tried different values for rewards and selected ones that work the best.
 
