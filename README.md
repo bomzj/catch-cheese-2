@@ -1,4 +1,4 @@
-# Simple JavaScript Game with AI powered by Artificial Neural Networks
+# Simple JavaScript Game with AI powered by Artificial Neural Network
 
 This is a showcase of how AI agent (mouse) itself learns to run away from the cat and collect cheeses in the game.
 You can play the game at https://bomzj.github.io/catch-cheese-2/dist/.
