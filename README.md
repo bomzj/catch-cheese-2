@@ -37,10 +37,15 @@ I chose **Relu** as activation function for hidden layer based on its performanc
 ## Other
 
 This game uses:
-- **TensorFlow.js** for machine learning in JavaScript
+- **TensorFlow.js** for machine learning in js
 - **Vue.js** as engine for game logic and rendering
 
 The code of this game is well commented and flexible being as starter kit. You can implement AI even for cat or adding walls inside the grid to make it as maze.
+
+
+# Setup
+
+
 ## Prerequisites
 
 - NPM
