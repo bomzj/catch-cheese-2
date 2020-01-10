@@ -27,19 +27,28 @@ I tried different values for rewards and selected ones that work the best.
 
 ## Neural Network Architecture
 
-I tried different number of hidden layers/neurons, the most optimal was 1 hidden layer with 6 neurons. With that configuration the mouse needs just 2 mins (training automatically stops) to understand the game at decent level to have approximately 98% win rate. Increasing the number of neurons didn't give better results, instead it takes longer to train.
-
+### Input Layer
 Input layer contains 16 neurons. At the beginning, I tried lesser number of input features that were continuous variables e.g. coordinates of the cat [3, 8], but were getting **Gradient Explosion**, so all weights of the network  were broken, becoming **NaN**. I decided to skip stuff like regularization for that and make more features but simple at the same time to boost learning process. So all 16 features are one-hot encoded (0 or 1) and describe position of the cat, cheese and the boundaries of the game field. 
 
+### 1 Hidden Layer
+I tried different number of hidden layers/neurons, the most optimal was 1 hidden layer with 6 neurons. With that configuration the mouse needs just 2 mins (training automatically stops) to understand the game at decent level to have approximately 98% win rate. Increasing the number of neurons didn't give better results, instead it takes longer to train.
+
+### Output Layer
 Output layer is vector of Q values for 4 actions, where the mouse can go [left, right, up, down]. An example, [0.9, -1, 0.3, 5], the mouse chooses to go down since Q value for down action is the highest one.
 
+### Activation functions
 I chose **Relu** as activation function for hidden layer based on its performance. For output layer I decided not to use  activation function since it allows us to have arbitrary values for reward,  so it's **linear**.
 
-## Other
+### Interesting Findings
+I discovered strange situation with long training process of the mouse. Training the model from the scratch for short period of time (2-5 mins) makes it very good at predictions, but if traininig continues right after that, the model becomes absolutely unusable! I'm not sure if it's somehow relates to **Overfitting** in Machine Learning. So, training it for short period of time makes it pretty good, but continuing training turns it into completely broken stuff. I checked model weights there were no **NaN**s or 0s. I suppose it's neither Gradient Exlosion nor Gradient Vanishing.
+
+
+## Game Dependencies
 
 This game uses:
 - **TensorFlow.js** for machine learning in js
-- **Vue.js** as engine for game logic and rendering
+- **Vue.js** as engine for main game loop, game logic, DOM manipulation and rendering
+- **Tailwind** for css styling
 
 The code of this game is well commented and flexible being as starter kit. You can implement AI even for cat or adding walls inside the grid to make it as maze.
 
