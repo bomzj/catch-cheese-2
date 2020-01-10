@@ -50,7 +50,7 @@ This game uses:
 - **Vue.js** as engine for main game loop, game logic, DOM manipulation and rendering
 - **Tailwind** for css styling
 
-The code of this game is well commented and flexible being as starter kit. You can implement AI even for cat or adding walls inside the grid to make it as maze.
+The code of this game is well commented and flexible being as **Starter Kit** or Tutorial. You can implement AI even for cat, add team of cats, bonuses, tweak input features to make mouse move by diagonal or adding walls inside the grid to make it as maze.
 
 
 # Setup
